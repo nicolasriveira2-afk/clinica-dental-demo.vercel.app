@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservar turno | Clínica Dental Sonrisa</title>
+    <meta name="description" content="Reservá tu turno en Clínica Dental Sonrisa en menos de 2 minutos. Confirmación por WhatsApp.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .turno-page { background: linear-gradient(180deg, var(--primary-light) 0%, var(--white) 100%); min-height: 100vh; padding: 60px 0; }
+        .turno-container { max-width: 720px; margin: 0 auto; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 48px; }
+        .turno-header { text-align: center; margin-bottom: 40px; }
+        .turno-header h1 { color: var(--dark); margin-bottom: 8px; }
+        .turno-header p { color: var(--gray-500); }
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .step__number { display: inline-block; width: 32px; height: 32px; background: var(--primary); color: var(--white); border-radius: 50%; text-align: center; line-height: 32px; font-weight: 700; margin-bottom: 16px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; color: var(--gray-700); margin-bottom: 8px; font-size: 0.95rem; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px 16px; border: 1.5px solid var(--gray-300); border-radius: var(--radius-sm); font-size: 1rem; font-family: inherit; transition: border var(--transition);
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .tratamientos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .tratamiento-option { padding: 16px; border: 2px solid var(--gray-100); border-radius: var(--radius-sm); cursor: pointer; text-align: center; transition: all var(--transition); background: var(--white); }
+        .tratamiento-option:hover { border-color: var(--primary); background: var(--primary-light); }
+        .tratamiento-option.selected { border-color: var(--primary); background: var(--primary-light); }
+        .tratamiento-option__icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+        .tratamiento-option__name { font-size: 0.85rem; font-weight: 600; color: var(--gray-700); }
+        .horarios-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+        .horario-option { padding: 12px 8px; border: 1.5px solid var(--gray-300); border-radius: var(--radius-sm); cursor: pointer; text-align: center; font-weight: 600; transition: all var(--transition); background: var(--white); }
+        .horario-option:hover:not(.disabled) { border-color: var(--primary); }
+        .horario-option.selected { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .horario-option.disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+        .step__actions { display: flex; justify-content: space-between; gap: 16px; margin-top: 32px; }
+        .step__actions .btn { flex: 1; }
+        .resumen { background: var(--gray-50); padding: 24px; border-radius: var(--radius); margin-bottom: 24px; }
+        .resumen__item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-100); }
+        .resumen__item:last-child { border-bottom: none; }
+        .resumen__label { color: var(--gray-500); font-weight: 500; }
+        .resumen__value { color: var(--dark); font-weight: 600; }
+        .confirmacion { text-align: center; padding: 40px 0; }
+        .confirmacion__icon { font-size: 4rem; margin-bottom: 20px; }
+        .success-box { background: #dcfce7; color: #166534; padding: 16px; border-radius: var(--radius-sm); margin: 20px 0; font-weight: 500; }
+        @media (max-width: 600px) {
+            .turno-container { padding: 32px 24px; margin: 0 16px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header__content">
+            <a href="index.html" class="logo">
+                <span class="logo__icon">🦷</span>
+                <span class="logo__text">Sonrisa</span>
+            </a>
+            <a href="index.html" class="btn btn--secondary btn--small">← Volver al inicio</a>
+        </div>
+    </header>
+
+    <main class="turno-page">
+        <div class="container">
+            <div class="turno-container">
+                <div class="turno-header">
+                    <h1>Reservá tu turno</h1>
+                    <p>Completá los datos y te confirmamos por WhatsApp en menos de 2 horas</p>
+                </div>
+
+                <form id="turnoForm">
+                    <div class="step active" data-step="1">
+                        <span class="step__number">1</span>
+                        <h2>¿Qué tratamiento necesitás?</h2>
+                        <p style="color: var(--gray-500); margin: 8px 0 24px;">Elegí el motivo de tu consulta</p>
+                        <div class="tratamientos-grid" id="tratamientos">
+                            <div class="tratamiento-option" data-value="Limpieza dental" data-duration="30">
+                                <span class="tratamiento-option__icon">🦷</span>
+                                <span class="tratamiento-option__name">Limpieza</span>
+                            </div>
+                            <div class="tratamiento-option" data-value="Consulta general" data-duration="30">
+                                <span class="tratamiento-option__icon">🩺</span>
+                                <span class="tratamiento-option__name">Consulta</span>
+                            </div>
+                            <div class="tratamiento-option" data-value="Ortodoncia" data-duration="60">
+                                <span class="tratamiento-option__icon">😁</span>
+                                <span class="tratamiento-option__name">Ortodoncia</span>
+                            </div>
+                            <div class="tratamiento-option" data-value="Estética dental" data-duration="60">
+                                <span class="tratamiento-option__icon">✨</span>
+                                <span class="tratamiento-option__name">Estética</span>
+                            </div>
+                            <div class="tratamiento-option" data-value="Implantes" data-duration="90">
+                                <span class="tratamiento-option__icon">🔧</span>
+                                <span class="tratamiento-option__name">Implantes</span>
+                            </div>
+                            <div class="tratamiento-option" data-value="Endodoncia" data-duration="60">
+                                <span class="tratamiento-option__icon">🩹</span>
+                                <span class="tratamiento-option__name">Endodoncia</span>
+                            </div>
+                            <div class="tratamiento-option" data-value="Urgencia" data-duration="30">
+                                <span class="tratamiento-option__icon">🚨</span>
+                                <span class="tratamiento-option__name">Urgencia</span>
+                            </div>
+                            <div class="tratamiento-option" data-value="Odontopediatría" data-duration="30">
+                                <span class="tratamiento-option__icon">👶</span>
+                                <span class="tratamiento-option__name">Niños</span>
+                            </div>
+                        </div>
+                        <div class="step__actions">
+                            <a href="index.html" class="btn btn--secondary">Cancelar</a>
+                            <button type="button" class="btn btn--primary" id="nextStep1">Continuar →</button>
+                        </div>
+                    </div>
+
+                    <div class="step" data-step="2">
+                        <span class="step__number">2</span>
+                        <h2>Elegí día y horario</h2>
+                        <div class="form-group">
+                            <label for="fecha">Fecha</label>
+                            <input type="date" id="fecha" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Horarios disponibles</label>
+                            <div class="horarios-grid" id="horarios">
+                            </div>
+                        </div>
+                        <div class="step__actions">
+                            <button type="button" class="btn btn--secondary" data-prev>← Atrás</button>
+                            <button type="button" class="btn btn--primary" id="nextStep2">Continuar →</button>
+                        </div>
+                    </div>
+
+                    <div class="step" data-step="3">
+                        <span class="step__number">3</span>
+                        <h2>Tus datos</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nombre">Nombre completo</label>
+                                <input type="text" id="nombre" required placeholder="Juan Pérez">
+                            </div>
+                            <div class="form-group">
+                                <label for="telefono">WhatsApp</label>
+                                <input type="tel" id="telefono" required placeholder="+54 9 11 1234-5678">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email (opcional)</label>
+                                <input type="email" id="email" placeholder="tu@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="obraSocial">Obra social (opcional)</label>
+                                <input type="text" id="obraSocial" placeholder="Swiss Medical, OSDE, Particular...">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="notas">Notas adicionales (opcional)</label>
+                            <textarea id="notas" rows="3" placeholder="Contanos brevemente tu situación..."></textarea>
+                        </div>
+                        <div class="step__actions">
+                            <button type="button" class="btn btn--secondary" data-prev>← Atrás</button>
+                            <button type="button" class="btn btn--primary" id="nextStep3">Revisar reserva →</button>
+                        </div>
+                    </div>
+
+                    <div class="step" data-step="4">
+                        <span class="step__number">4</span>
+                        <h2>Confirmá tu turno</h2>
+                        <div class="resumen" id="resumenTurno">
+                        </div>
+                        <p style="color: var(--gray-500); font-size: 0.9rem; margin-bottom: 24px;">Al confirmar, te llega un WhatsApp con los datos de tu turno y los pasos a seguir.</p>
+                        <div class="step__actions">
+                            <button type="button" class="btn btn--secondary" data-prev>← Atrás</button>
+                            <button type="submit" class="btn btn--primary">✓ Confirmar reserva</button>
+                        </div>
+                    </div>
+
+                    <div class="step" data-step="5">
+                        <div class="confirmacion">
+                            <div class="confirmacion__icon">✅</div>
+                            <h2>¡Turno reservado con éxito!</h2>
+                            <div class="success-box" id="mensajeExito">
+                            </div>
+                            <p style="color: var(--gray-500); margin-bottom: 24px;">Te enviamos todos los datos por WhatsApp. Si no te llega en 2 horas, escribinos.</p>
+                            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                                <a href="https://wa.me/5491112345678" class="btn btn--primary" target="_blank">Abrir WhatsApp</a>
+                                <a href="index.html" class="btn btn--secondary">Volver al inicio</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/turnos.js"></script>
+</body>
+</html>
